@@ -1,15 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using aspnet_biometric.Models;
 using aspnet_biometric.Services;
 using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 
 namespace aspnet_biometric.Pages.Account
 {
@@ -137,4 +133,4 @@ namespace aspnet_biometric.Pages.Account
             }
         }
     }
-} 
+}

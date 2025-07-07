@@ -1,15 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using aspnet_biometric.Models;
 using aspnet_biometric.Services;
 using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 
 namespace aspnet_biometric.Pages;
 
@@ -43,9 +39,6 @@ public class IndexModel : PageModel
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
     }
 
     public async Task<IActionResult> OnGetAsync(string? returnUrl = null)
@@ -78,7 +71,7 @@ public class IndexModel : PageModel
         {
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in.");
@@ -86,7 +79,7 @@ public class IndexModel : PageModel
             }
             if (result.RequiresTwoFactor)
             {
-                return RedirectToPage("./Account/LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                return RedirectToPage("./Account/LoginWith2fa", new { ReturnUrl = returnUrl });
             }
             if (result.IsLockedOut)
             {

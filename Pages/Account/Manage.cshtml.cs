@@ -2,13 +2,11 @@ using aspnet_biometric.Models;
 using aspnet_biometric.Services;
 using aspnet_biometric.Data;
 using Fido2NetLib;
-using Fido2NetLib.Objects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace aspnet_biometric.Pages.Account
 {
@@ -38,7 +36,7 @@ namespace aspnet_biometric.Pages.Account
             }
 
             Username = user.UserName;
-            
+
             // Check if user has any biometric credentials registered
             IsBiometricRegistered = await _context.Fido2Credentials
                 .AnyAsync(c => c.UserId == user.Id);
@@ -63,7 +61,7 @@ namespace aspnet_biometric.Pages.Account
                 var credentials = await _context.Fido2Credentials
                     .Where(c => c.UserId == user.Id)
                     .ToListAsync();
-                
+
                 _context.Fido2Credentials.RemoveRange(credentials);
                 await _context.SaveChangesAsync();
 
@@ -106,7 +104,7 @@ namespace aspnet_biometric.Pages.Account
                 var optionsJson = HttpContext.Session.GetString("fido2.attestationOptions");
                 var options = CredentialCreateOptions.FromJson(optionsJson);
                 var user = await _userManager.GetUserAsync(User);
-                
+
                 if (user == null || user.UserName == null)
                 {
                     return new JsonResult(new { status = "error", errorMessage = "User not found." });
@@ -122,4 +120,4 @@ namespace aspnet_biometric.Pages.Account
             }
         }
     }
-} 
+}

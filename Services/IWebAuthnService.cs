@@ -1,6 +1,5 @@
 using Fido2NetLib;
 using Fido2NetLib.Objects;
-using System.Threading.Tasks;
 using aspnet_biometric.Models;
 using static Fido2NetLib.Fido2;
 
