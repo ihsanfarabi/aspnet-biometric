@@ -57,7 +57,7 @@ namespace aspnet_biometric.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/");
+            returnUrl ??= Url.Content("~/Home");
             
             if (ModelState.IsValid)
             {

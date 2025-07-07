@@ -74,7 +74,7 @@ if (document.getElementById('register-form')) {
 
             if (completeResult.status === 'ok') {
                 alert('Registration successful!');
-                window.location.href = '/';
+                window.location.href = '/Home';
             } else {
                 alert('Registration failed: ' + completeResult.errorMessage);
             }
@@ -150,7 +150,7 @@ if (document.getElementById('login-usernameless')) {
 
             if (completeResult.status === 'ok') {
                 alert('Login successful!');
-                window.location.href = '/';
+                window.location.href = '/Home';
             } else {
                 alert('Login failed: ' + completeResult.errorMessage);
             }

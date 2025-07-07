@@ -53,7 +53,7 @@ public class IndexModel : PageModel
         // If user is already authenticated, redirect to the dashboard or home
         if (User.Identity?.IsAuthenticated == true)
         {
-            return LocalRedirect(returnUrl ?? "~/Account/Manage");
+            return LocalRedirect(returnUrl ?? "~/Home");
         }
 
         if (!string.IsNullOrEmpty(ErrorMessage))
@@ -61,7 +61,7 @@ public class IndexModel : PageModel
             ModelState.AddModelError(string.Empty, ErrorMessage);
         }
 
-        returnUrl ??= Url.Content("~/Account/Manage");
+        returnUrl ??= Url.Content("~/Home");
 
         // Clear the existing external cookie to ensure a clean login process
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -72,7 +72,7 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/Account/Manage");
+        returnUrl ??= Url.Content("~/Home");
 
         if (ModelState.IsValid)
         {
