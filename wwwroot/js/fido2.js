@@ -28,58 +28,176 @@ if (document.getElementById('biometricToggle')) {
         const token = tokenElement.value;
         console.log('Anti-forgery token found:', token ? 'Yes' : 'No');
         
-        try {
-            console.log('Making request to ToggleBiometric handler...');
-            
-            // Create form data with the anti-forgery token
-            const formData = new FormData();
-            formData.append('__RequestVerificationToken', token);
-            
-            const response = await fetch('/Account/Manage?handler=ToggleBiometric', {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': token
-                },
-                body: formData
-            });
-
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-            console.log('Response url:', response.url);
-            
-            if (!response.ok) {
-                if (response.status === 302) {
-                    throw new Error('Authentication failed. Please refresh the page and try again.');
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('Toggle biometric response:', result);
-
-            if (result.status === 'ok') {
-                // Successfully disabled
-                console.log('Successfully toggled, enabled:', result.enabled);
-                updateBiometricStatus(result.enabled);
-                alert(result.message);
-            } else if (result.status === 'register') {
-                // Need to register biometric credential
-                console.log('Starting registration process...');
-                await registerBiometricCredential(result.options);
-            } else {
-                // Error occurred
-                console.error('Server returned error:', result.errorMessage);
-                toggle.checked = !isEnabled; // Revert toggle
-                alert('Error: ' + result.errorMessage);
-            }
-        } catch (err) {
-            console.error('Toggle biometric error:', err);
-            toggle.checked = !isEnabled; // Revert toggle
-            alert('An error occurred: ' + err.message);
+        if (isEnabled) {
+            // User wants to enable biometric - show terms and conditions first
+            showTermsAndConditions(toggle, token);
+        } else {
+            // User wants to disable biometric - proceed directly
+            await disableBiometric(toggle, token);
         }
     });
 } else {
     console.log('Biometric toggle element not found!');
+}
+
+function showTermsAndConditions(toggle, token) {
+    console.log('Showing terms and conditions modal...');
+    
+    // Show the terms modal
+    const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
+    termsModal.show();
+    
+    // Handle accept terms
+    document.getElementById('acceptTerms').onclick = function() {
+        console.log('Terms accepted, showing password confirmation...');
+        termsModal.hide();
+        showPasswordConfirmation(toggle, token);
+    };
+    
+    // Handle decline terms
+    document.getElementById('declineTerms').onclick = function() {
+        console.log('Terms declined, reverting toggle...');
+        toggle.checked = false;
+        termsModal.hide();
+    };
+    
+    // Handle modal close (X button or backdrop)
+    document.getElementById('termsModal').addEventListener('hidden.bs.modal', function() {
+        if (!document.getElementById('passwordModal').classList.contains('show')) {
+            // Only revert if password modal is not showing (user closed terms modal)
+            toggle.checked = false;
+        }
+    }, { once: true });
+}
+
+function showPasswordConfirmation(toggle, token) {
+    console.log('Showing password confirmation modal...');
+    
+    // Clear previous password and error
+    document.getElementById('confirmPassword').value = '';
+    document.getElementById('passwordError').style.display = 'none';
+    
+    // Show the password modal
+    const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    passwordModal.show();
+    
+    // Handle password confirmation
+    document.getElementById('confirmPasswordBtn').onclick = async function() {
+        const password = document.getElementById('confirmPassword').value;
+        
+        if (!password) {
+            showPasswordError('Please enter your password.');
+            return;
+        }
+        
+        console.log('Password entered, verifying...');
+        await verifyPasswordAndRegister(toggle, token, password, passwordModal);
+    };
+    
+    // Handle Enter key in password field
+    document.getElementById('confirmPassword').onkeypress = function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('confirmPasswordBtn').click();
+        }
+    };
+    
+    // Handle modal close
+    document.getElementById('passwordModal').addEventListener('hidden.bs.modal', function() {
+        toggle.checked = false; // Revert toggle if modal is closed without confirmation
+    }, { once: true });
+}
+
+function showPasswordError(message) {
+    const errorDiv = document.getElementById('passwordError');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+async function verifyPasswordAndRegister(toggle, token, password, passwordModal) {
+    try {
+        console.log('Verifying password and starting biometric registration...');
+        
+        // Create form data with password and token
+        const formData = new FormData();
+        formData.append('__RequestVerificationToken', token);
+        formData.append('password', password);
+        
+        const response = await fetch('/Account/Manage?handler=VerifyPasswordAndStartRegistration', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            body: formData
+        });
+
+        console.log('Password verification response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Password verification response:', result);
+
+        if (result.status === 'ok') {
+            // Password verified, close modal and start biometric registration
+            passwordModal.hide();
+            console.log('Password verified, starting biometric registration...');
+            await registerBiometricCredential(result.options);
+        } else {
+            // Password verification failed
+            showPasswordError(result.errorMessage || 'Invalid password. Please try again.');
+        }
+    } catch (err) {
+        console.error('Password verification error:', err);
+        showPasswordError('An error occurred. Please try again.');
+    }
+}
+
+async function disableBiometric(toggle, token) {
+    try {
+        console.log('Disabling biometric authentication...');
+        
+        // Create form data with the anti-forgery token
+        const formData = new FormData();
+        formData.append('__RequestVerificationToken', token);
+        
+        const response = await fetch('/Account/Manage?handler=ToggleBiometric', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            body: formData
+        });
+
+        console.log('Disable biometric response status:', response.status);
+        
+        if (!response.ok) {
+            if (response.status === 302) {
+                throw new Error('Authentication failed. Please refresh the page and try again.');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Disable biometric response:', result);
+
+        if (result.status === 'ok') {
+            // Successfully disabled
+            console.log('Successfully disabled biometric authentication');
+            updateBiometricStatus(result.enabled);
+            alert(result.message);
+        } else {
+            // Error occurred
+            console.error('Server returned error:', result.errorMessage);
+            toggle.checked = true; // Revert toggle
+            alert('Error: ' + result.errorMessage);
+        }
+    } catch (err) {
+        console.error('Disable biometric error:', err);
+        toggle.checked = true; // Revert toggle
+        alert('An error occurred: ' + err.message);
+    }
 }
 
 async function registerBiometricCredential(options) {

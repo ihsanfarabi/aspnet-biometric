@@ -44,6 +44,67 @@
     </form>
 </div>
 
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Biometric Authentication Terms & Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-content">
+                    <h6>Privacy and Security Notice</h6>
+                    <p>By enabling biometric authentication, you agree to the following:</p>
+                    
+                    <ul>
+                        <li><strong>Biometric Data Collection:</strong> Your biometric credentials (fingerprint, face recognition, or hardware security key) will be securely stored on your device and linked to your account.</li>
+                        <li><strong>Data Security:</strong> Biometric data is encrypted and stored locally on your device. We do not store your actual biometric information on our servers.</li>
+                        <li><strong>Account Access:</strong> This biometric credential will allow passwordless access to your account from this device.</li>
+                        <li><strong>Device Binding:</strong> The biometric credential is tied to this specific device and browser.</li>
+                        <li><strong>Revocation:</strong> You can disable biometric authentication at any time through your account settings.</li>
+                        <li><strong>Backup Access:</strong> Ensure you remember your password as a backup authentication method.</li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> This process will require you to confirm your current password and then set up your biometric credential.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="declineTerms">Decline</button>
+                <button type="button" class="btn btn-primary" id="acceptTerms">I Agree</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Confirmation Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordModalLabel">Confirm Your Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your current password to proceed with biometric registration:</p>
+                <form id="passwordConfirmForm">
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Password" required>
+                        <label for="confirmPassword">Current Password</label>
+                    </div>
+                    <div id="passwordError" class="text-danger" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmPasswordBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/fido2.js"></script>
 } 
