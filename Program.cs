@@ -65,7 +65,7 @@ builder.Services.AddScoped<IWebAuthnService, WebAuthnService>();
 // Configure authentication
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
+    options.LoginPath = "/";
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
