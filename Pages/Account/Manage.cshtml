@@ -1,0 +1,28 @@
+@page
+@model aspnet_biometric.Pages.Account.ManageModel
+@{
+    ViewData["Title"] = "Manage Account";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <h4>Register a Passkey</h4>
+            <hr />
+            <p>
+                Add a passkey (like a fingerprint, face ID, or a hardware security key) to your account to enable fast and secure passwordless sign-in.
+            </p>
+            <form id="register-form" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="username" name="username" value="@Model.Username" />
+                <button type="submit" class="btn btn-primary">Add Passkey</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/fido2.js"></script>
+} 
