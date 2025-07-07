@@ -4,23 +4,44 @@
     ViewData["Title"] = "Manage Account";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
 
-<div class="row">
-    <div class="col-md-6">
-        <section>
-            <h4>Register a Passkey</h4>
-            <hr />
-            <p>
-                Add a passkey (like a fingerprint, face ID, or a hardware security key) to your account to enable fast and secure passwordless sign-in.
-            </p>
-            <form id="register-form" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="username" name="username" value="@Model.Username" />
-                <button type="submit" class="btn btn-primary">Add Passkey</button>
-            </form>
-        </section>
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title mb-1">Biometric Authentication</h5>
+                    <p class="card-text text-muted">
+                        @if (Model.IsBiometricRegistered)
+                        {
+                            <span class="text-success">Enabled - Secure passwordless login</span>
+                        }
+                        else
+                        {
+                            <span class="text-warning">Disabled - Use password to login</span>
+                        }
+                    </p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="biometricToggle" 
+                           @(Model.IsBiometricRegistered ? "checked" : "") 
+                           style="width: 3em; height: 1.5em;">
+                    <label class="form-check-label" for="biometricToggle"></label>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Hidden forms for anti-forgery tokens -->
+    <form style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
+    
+    <form id="register-form" style="display: none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="username" name="username" value="@Model.Username" />
+    </form>
 </div>
 
 @section Scripts {
