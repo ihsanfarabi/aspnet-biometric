@@ -307,7 +307,11 @@ if (document.getElementById('login-usernameless')) {
         try {
             console.log('Usernameless login started');
 
-            const response = await fetch(`/Account/Login?handler=GetAssertionOptionsUsernameless`, {
+            // Determine which page we're on to call the correct endpoint
+            const isIndexPage = window.location.pathname === '/' || window.location.pathname === '/Index';
+            const baseUrl = isIndexPage ? '/' : '/Account/Login';
+
+            const response = await fetch(`${baseUrl}?handler=GetAssertionOptionsUsernameless`, {
                 method: 'POST',
                 headers: {
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
@@ -352,7 +356,7 @@ if (document.getElementById('login-usernameless')) {
             };
             console.log('Sending assertion response to server:', assertionResponse);
 
-            const completeResponse = await fetch('/Account/Login?handler=MakeAssertion', {
+            const completeResponse = await fetch(`${baseUrl}?handler=MakeAssertion`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -365,8 +369,14 @@ if (document.getElementById('login-usernameless')) {
             console.log('Server login response:', completeResult);
 
             if (completeResult.status === 'ok') {
-                alert('Login successful!');
-                window.location.href = '/Home';
+                if (completeResult.redirectUrl) {
+                    // Use the redirect URL from the server response (for Index page)
+                    window.location.href = completeResult.redirectUrl;
+                } else {
+                    // Default redirect for Account/Login page
+                    alert('Login successful!');
+                    window.location.href = '/Home';
+                }
             } else {
                 alert('Login failed: ' + completeResult.errorMessage);
             }

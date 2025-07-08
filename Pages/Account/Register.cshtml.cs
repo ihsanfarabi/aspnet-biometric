@@ -74,8 +74,8 @@ namespace aspnet_biometric.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
+                    // Redirect to login page after successful registration
+                    return RedirectToPage("/Index", new { returnUrl });
                 }
                 
                 foreach (var error in result.Errors)

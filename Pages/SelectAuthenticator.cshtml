@@ -1,0 +1,49 @@
+@page
+@model SelectAuthenticatorModel
+@{
+    ViewData["Title"] = "Select Authenticator";
+    Layout = "~/Pages/Shared/_PublicLayout.cshtml";
+}
+
+<div class="container-fluid vh-100 d-flex align-items-center">
+    <div class="row w-100">
+        <div class="col-md-6"></div>
+        <div class="col-md-6 col-lg-4 offset-lg-2">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Choose Authentication Method</h2>
+                    <div class="text-center mb-4">
+                        <p class="text-muted">Welcome back, @Model.UserDisplayName!</p>
+                        <p class="text-muted small">Please select your preferred authentication method to continue.</p>
+                    </div>
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                    
+                    <div class="d-grid gap-3">
+                        <!-- Email Authentication Button -->
+                        <form method="post" asp-page-handler="Email" asp-route-returnUrl="@Model.ReturnUrl">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-envelope me-2"></i>
+                                Email Authentication
+                            </button>
+                        </form>
+                        
+                        <!-- OTP Authentication Button -->
+                        <form method="post" asp-page-handler="Otp" asp-route-returnUrl="@Model.ReturnUrl">
+                            <button type="submit" class="btn btn-outline-primary btn-lg w-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-key me-2"></i>
+                                OTP Authentication
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted small">
+                            Not you? <a asp-page="/Index">Sign in with a different account</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

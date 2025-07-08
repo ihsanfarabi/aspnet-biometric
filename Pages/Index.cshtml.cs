@@ -74,7 +74,17 @@ public class IndexModel : PageModel
             var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
-                _logger.LogInformation("User logged in.");
+                _logger.LogInformation("User credentials verified, redirecting to authenticator selection.");
+                
+                // Store user ID in session for the SelectAuthenticator page
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user != null)
+                {
+                    HttpContext.Session.SetString("temp_user_id", user.Id);
+                    await _signInManager.SignOutAsync(); // Sign out temporarily
+                    return RedirectToPage("/SelectAuthenticator", new { returnUrl });
+                }
+                
                 return LocalRedirect(returnUrl);
             }
             if (result.RequiresTwoFactor)
@@ -126,7 +136,15 @@ public class IndexModel : PageModel
 
             if (result.Status == "ok" && user != null)
             {
-                await _signInManager.SignInAsync(user, isPersistent: true);
+                // Store user ID in session for the SelectAuthenticator page
+                HttpContext.Session.SetString("temp_user_id", user.Id);
+                
+                // Return success with redirect URL to SelectAuthenticator
+                return new JsonResult(new { 
+                    status = "ok", 
+                    message = "Biometric authentication successful",
+                    redirectUrl = Url.Page("/SelectAuthenticator")
+                });
             }
 
             return new JsonResult(result);
