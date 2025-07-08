@@ -29,8 +29,8 @@ if (document.getElementById('biometricToggle')) {
         console.log('Anti-forgery token found:', token ? 'Yes' : 'No');
         
         if (isEnabled) {
-            // User wants to enable biometric - show terms and conditions first
-            showTermsAndConditions(toggle, token);
+            // User wants to enable biometric - check if they have existing credentials
+            await enableBiometric(toggle, token);
         } else {
             // User wants to disable biometric - proceed directly
             await disableBiometric(toggle, token);
@@ -154,6 +154,56 @@ async function verifyPasswordAndRegister(toggle, token, password, passwordModal)
     }
 }
 
+async function enableBiometric(toggle, token) {
+    try {
+        console.log('Attempting to enable biometric authentication...');
+        
+        // Create form data with the anti-forgery token
+        const formData = new FormData();
+        formData.append('__RequestVerificationToken', token);
+        
+        const response = await fetch('/Account/Manage?handler=ToggleBiometric', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            },
+            body: formData
+        });
+
+        console.log('Enable biometric response status:', response.status);
+        
+        if (!response.ok) {
+            if (response.status === 302) {
+                throw new Error('Authentication failed. Please refresh the page and try again.');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Enable biometric response:', result);
+
+        if (result.status === 'ok') {
+            // Successfully enabled using existing credentials
+            console.log('Successfully re-enabled biometric authentication with existing credentials');
+            updateBiometricStatus(result.enabled);
+            alert(result.message);
+        } else if (result.status === 'needsRegistration') {
+            // User needs to register new credentials - show terms and conditions
+            console.log('User needs to register new credentials');
+            showTermsAndConditions(toggle, token);
+        } else {
+            // Error occurred
+            console.error('Server returned error:', result.errorMessage);
+            toggle.checked = false; // Revert toggle
+            alert('Error: ' + result.errorMessage);
+        }
+    } catch (err) {
+        console.error('Enable biometric error:', err);
+        toggle.checked = false; // Revert toggle
+        alert('An error occurred: ' + err.message);
+    }
+}
+
 async function disableBiometric(toggle, token) {
     try {
         console.log('Disabling biometric authentication...');
@@ -265,7 +315,7 @@ function updateBiometricStatus(enabled) {
             statusText.textContent = 'Enabled - Secure passwordless login';
         } else {
             statusText.className = 'text-warning';
-            statusText.textContent = 'Disabled - Use password to login';
+            statusText.textContent = 'Disabled - Credentials preserved';
         }
     }
 }

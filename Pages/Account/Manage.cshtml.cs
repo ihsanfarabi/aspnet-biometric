@@ -41,9 +41,11 @@ namespace aspnet_biometric.Pages.Account
 
             Username = user.UserName;
             
-            // Check if user has any biometric credentials registered
-            IsBiometricRegistered = await _context.Fido2Credentials
+            // Check if user has biometric credentials registered AND enabled
+            var hasCredentials = await _context.Fido2Credentials
                 .AnyAsync(c => c.UserId == user.Id);
+            
+            IsBiometricRegistered = hasCredentials && user.IsBiometricEnabled;
 
             return Page();
         }
@@ -89,20 +91,42 @@ namespace aspnet_biometric.Pages.Account
 
             if (hasCredentials)
             {
-                // Remove all biometric credentials for this user
-                var credentials = await _context.Fido2Credentials
-                    .Where(c => c.UserId == user.Id)
-                    .ToListAsync();
+                // Toggle the biometric enabled flag - no need for new registration
+                user.IsBiometricEnabled = !user.IsBiometricEnabled;
+                var result = await _userManager.UpdateAsync(user);
                 
-                _context.Fido2Credentials.RemoveRange(credentials);
-                await _context.SaveChangesAsync();
-
-                return new JsonResult(new { status = "ok", enabled = false, message = "Biometric authentication disabled." });
+                if (result.Succeeded)
+                {
+                    var statusMessage = user.IsBiometricEnabled 
+                        ? "Biometric authentication re-enabled using existing credentials." 
+                        : "Biometric authentication disabled.";
+                    
+                    return new JsonResult(new { 
+                        status = "ok", 
+                        enabled = user.IsBiometricEnabled, 
+                        message = statusMessage 
+                    });
+                }
+                else
+                {
+                    return new JsonResult(new { status = "error", errorMessage = "Failed to update biometric settings." });
+                }
             }
             else
             {
-                // This should not happen with the new flow - enabling should go through password verification
-                return new JsonResult(new { status = "error", errorMessage = "Please use the proper registration flow." });
+                // No credentials registered - user needs to register first
+                if (user.IsBiometricEnabled)
+                {
+                    // User is trying to disable but has no credentials (shouldn't happen)
+                    user.IsBiometricEnabled = false;
+                    await _userManager.UpdateAsync(user);
+                    return new JsonResult(new { status = "ok", enabled = false, message = "Biometric authentication disabled." });
+                }
+                else
+                {
+                    // User is trying to enable but has no credentials - show registration flow
+                    return new JsonResult(new { status = "needsRegistration", message = "Please register biometric credentials first." });
+                }
             }
         }
 
@@ -134,6 +158,13 @@ namespace aspnet_biometric.Pages.Account
                 }
 
                 var result = await _webAuthnService.CompleteRegistrationAsync(attestationResponse, options, user.UserName);
+
+                // If registration is successful, ensure biometric is enabled
+                if (result.Status == "ok")
+                {
+                    user.IsBiometricEnabled = true;
+                    await _userManager.UpdateAsync(user);
+                }
 
                 return new JsonResult(result);
             }

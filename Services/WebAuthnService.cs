@@ -127,6 +127,12 @@ namespace aspnet_biometric.Services
                 throw new InvalidOperationException("User or public key not found");
             }
 
+            // Check if biometric authentication is enabled for this user
+            if (!user.IsBiometricEnabled)
+            {
+                throw new InvalidOperationException("Biometric authentication is disabled for this user");
+            }
+
             var result = await _fido2.MakeAssertionAsync(assertionResponse, storedOptions, creds.PublicKey, creds.SignatureCounter, (args, cancellationToken) =>
             {
                 if (user.Fido2Id == null || args.UserHandle == null) return Task.FromResult(false);
