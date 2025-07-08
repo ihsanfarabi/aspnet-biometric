@@ -9,7 +9,7 @@ namespace aspnet_biometric.Models
         public string? DisplayName { get; set; }
         
         // Flag to enable/disable biometric authentication without deleting credentials
-        public bool IsBiometricEnabled { get; set; } = true;
+        public bool IsBiometricEnabled { get; set; } = false;
 
         // Navigation property for FIDO2 credentials
         public virtual ICollection<Fido2Credential> Fido2Credentials { get; set; } = new List<Fido2Credential>();
